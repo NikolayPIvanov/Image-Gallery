@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.API", "ImageGallery.API\ImageGallery.API.csproj", "{35F106B9-B39F-43E8-9D59-10863FAAFA3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageGallery.API", "ImageGallery.API\ImageGallery.API.csproj", "{35F106B9-B39F-43E8-9D59-10863FAAFA3B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Models", "ImageGallery.Models\ImageGallery.Models.csproj", "{F4A2BD88-46F2-4B7F-880B-1E18BEF9CA33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageGallery.Models", "ImageGallery.Models\ImageGallery.Models.csproj", "{F4A2BD88-46F2-4B7F-880B-1E18BEF9CA33}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.Data", "ImageGallery.Data\ImageGallery.Data.csproj", "{A3D6E988-D24C-45E3-993D-43292FA280F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageGallery.Data", "ImageGallery.Data\ImageGallery.Data.csproj", "{A3D6E988-D24C-45E3-993D-43292FA280F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageGallery.ImageSettings", "ImageGallery.ImageSettings\ImageGallery.ImageSettings.csproj", "{F0F07C0E-7993-4813-9E35-05E8F68AD0F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{A3D6E988-D24C-45E3-993D-43292FA280F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3D6E988-D24C-45E3-993D-43292FA280F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3D6E988-D24C-45E3-993D-43292FA280F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0F07C0E-7993-4813-9E35-05E8F68AD0F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0F07C0E-7993-4813-9E35-05E8F68AD0F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0F07C0E-7993-4813-9E35-05E8F68AD0F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0F07C0E-7993-4813-9E35-05E8F68AD0F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,5 @@
-﻿using ImageGallery.API.Services.Contracts;
+﻿using ImageGallery.API.Helpers;
+using ImageGallery.API.Services.Contracts;
 using ImageGallery.Data;
 using ImageGallery.Models;
 using Microsoft.EntityFrameworkCore;
@@ -28,9 +29,13 @@ namespace ImageGallery.API.Services
             return await this.context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task<IEnumerable<Image>> GetImages()   
+        public async Task<PagedList<Image>> GetImages(ImagesResourceParameters imagesResourceParameters)   
         {
-            return await this.context.Images.ToListAsync();
+            var collection  = this.context.Images.OrderBy(i => i.Title);
+
+            return await PagedList<Image>.Create(collection,
+                imagesResourceParameters.PageNumber,
+                imagesResourceParameters.PageSize);
         }
 
         public async Task AddImage(Image image)
@@ -41,9 +46,7 @@ namespace ImageGallery.API.Services
         public void DeleteImage(Image image)
         {
             context.Images.Remove(image);
-
-            // Note: in a real-life scenario, the image itself should also 
-            // be removed from disk.  
+            
         }
 
         public async Task<bool> Save()
@@ -51,5 +54,6 @@ namespace ImageGallery.API.Services
             return (await this.context.SaveChangesAsync() >= 0);
         }
 
+        
     }
 }

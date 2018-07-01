@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using ImageGallery.API.Entities;
 using ImageGallery.Data;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
@@ -27,7 +26,7 @@ namespace ImageGallery.API
                 {
                     var context = scope.ServiceProvider.GetService<GalleryContext>();
                     context.Database.Migrate();
-                    context.EnsureSeedDataForContext();
+                    //context.EnsureSeedDataForContext();
                 }
                 catch (Exception ex)
                 {

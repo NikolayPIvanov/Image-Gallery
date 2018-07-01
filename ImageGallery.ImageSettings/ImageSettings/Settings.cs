@@ -1,20 +1,22 @@
-﻿using ImageGallery.Models.Photos.Contract;
+﻿
+using ImageGallery.Settings;
+using ImageGallery.Settings.Contract;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
-namespace ImageGallery.Models.Photos
+    
+namespace ImageGallery.ImageSettings
 {
-    public class PhotoSettings : IPhotoSettings
+    public class Settings : IPhotoSettings
     {
         public int MaxBytes { get; set; }
         public string[] AcceptedFileTypes { get; set; }
 
         public bool IsSupported(string fileName)
         {
-            return AcceptedFileTypes.Any(s => s == Path.GetExtension(fileName).ToLower());
+            return Enum.IsDefined(typeof(AllowedExtensionEnum),Path.GetExtension(fileName).ToLower());
         }
     }
 }

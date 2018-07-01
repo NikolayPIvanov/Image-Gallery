@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ImageGallery.Models.Photos.Contract
+namespace ImageGallery.Settings.Contract
 {
     public interface IPhotoSettings
     {

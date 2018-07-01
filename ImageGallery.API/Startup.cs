@@ -6,8 +6,6 @@ using ImageGallery.API.Services;
 using ImageGallery.API.Services.Contracts;
 using ImageGallery.Data;
 using ImageGallery.Models;
-using ImageGallery.Models.Photos;
-using ImageGallery.Models.Photos.Contract;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +13,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using ImageGallery.Settings.Contract;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace ImageGallery.API
 {
@@ -34,9 +36,13 @@ namespace ImageGallery.API
             options.UseSqlServer(Configuration.GetConnectionString("Default")));
 
             services.AddTransient<IGalleryRepository,GalleryRepository>();
-            services.AddTransient<IPhotoSettings,PhotoSettings>();
-           
-
+            services.AddTransient<IPhotoSettings, ImageSettings.Settings>();
+            services.AddSingleton<IActionContextAccessor,ActionContextAccessor>();
+            services.AddScoped<IUrlHelper,UrlHelper>(implementationFactory =>
+            {
+                var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
+                return new UrlHelper(actionContext);
+            });
 
             services.AddMvc();
         }
@@ -49,20 +55,15 @@ namespace ImageGallery.API
                 app.UseDeveloperExceptionPage();
             }
 
-            AutoMapper.Mapper.Initialize(cfg =>
+            AutoMapper.Mapper.Initialize(configure =>
             {
-                // Map from Image (entity) to Image, and back
-                cfg.CreateMap<Image, Image>().ReverseMap();
-
-                // Map from ImageForCreation to Image
-                // Ignore properties that shouldn't be mapped
-                cfg.CreateMap<ImageForCreation, Image>()
+                configure.CreateMap<Image, Image>().ReverseMap();
+                
+                configure.CreateMap<ImageForCreation, Image>()
                     .ForMember(m => m.FileName, options => options.Ignore())
                     .ForMember(m => m.Id, options => options.Ignore());
-
-                // Map from ImageForUpdate to Image
-                // ignore properties that shouldn't be mapped
-                cfg.CreateMap<ImageForUpdate, Image>()
+                
+                configure.CreateMap<ImageForUpdate, Image>()
                     .ForMember(m => m.FileName, options => options.Ignore())
                     .ForMember(m => m.Id, options => options.Ignore());
             });

@@ -1,4 +1,5 @@
-﻿using ImageGallery.Models;
+﻿using ImageGallery.API.Helpers;
+using ImageGallery.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace ImageGallery.API.Services.Contracts
 {
     public interface IGalleryRepository
     {
-        Task<IEnumerable<Image>> GetImages();   
+        Task<PagedList<Image>> GetImages(ImagesResourceParameters imagesResourceParameters);   
         Task<Image> GetImage(Guid id);
         Task<bool> ImageExists(Guid id);
         Task AddImage(Image image);

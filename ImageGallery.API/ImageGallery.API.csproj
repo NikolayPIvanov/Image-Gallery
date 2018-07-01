@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Entities\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -19,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ImageGallery.Data\ImageGallery.Data.csproj" />
+    <ProjectReference Include="..\ImageGallery.ImageSettings\ImageGallery.ImageSettings.csproj" />
     <ProjectReference Include="..\ImageGallery.Models\ImageGallery.Models.csproj" />
   </ItemGroup>
 

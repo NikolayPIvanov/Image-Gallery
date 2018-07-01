@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ImageGallery.API.Entities
+namespace ImageGallery.Data
 {
     public static class GalleryContextExtensions
     {
