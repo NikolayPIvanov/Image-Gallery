@@ -33,16 +33,16 @@ namespace ImageGallery.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<GalleryContext>(options => 
+            services.AddDbContext<GalleryContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("Default")));
-            services.AddTransient<IGalleryRepository,GalleryRepository>();
+            services.AddTransient<IGalleryRepository, GalleryRepository>();
             services.AddTransient<IPhotoSettings, ImageSettings.Settings>();
-            services.AddSingleton<IActionContextAccessor,ActionContextAccessor>();
-            services.AddScoped<IUrlHelper,UrlHelper>(implementationFactory =>
-            {
-                var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
-                return new UrlHelper(actionContext);
-            });
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<IUrlHelper, UrlHelper>(implementationFactory =>
+             {
+                 var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
+                 return new UrlHelper(actionContext);
+             });
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
             services.AddTransient<ITypeHelperService, TypeHelperService>();
             services.AddMvc().AddJsonOptions(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
@@ -59,16 +59,29 @@ namespace ImageGallery.API
             AutoMapper.Mapper.Initialize(configure =>
             {
                 configure.CreateMap<Image, Image>().ReverseMap();
-                
+
                 configure.CreateMap<ImageForCreation, Image>()
                     .ForMember(m => m.FileName, options => options.Ignore())
                     .ForMember(m => m.Id, options => options.Ignore());
-                
+
                 configure.CreateMap<ImageForUpdate, Image>()
                     .ForMember(m => m.FileName, options => options.Ignore())
                     .ForMember(m => m.Id, options => options.Ignore());
+
+                configure.CreateMap<ImageDto,Image>()
+                .ForMember(m => m.Id, options => options.MapFrom(src => src.Id))
+                .ForMember(m => m.Title, options => options.MapFrom(src => src.Title))
+                .ForMember(m => m.FileName, options => options.MapFrom(src => src.Name))
+                .ForMember(m => m.DateUploaded, options => options.MapFrom(src => src.Uploaded));
+
+                configure.CreateMap<Image, ImageDto>()
+                .ForMember(m => m.Id, options => options.MapFrom(src => src.Id))
+                .ForMember(m => m.Title, options => options.MapFrom(src => src.Title))
+                .ForMember(m => m.Name, options => options.MapFrom(src => src.FileName))
+                .ForMember(m => m.Uploaded, options => options.MapFrom(src => src.DateUploaded));
+
             });
-            
+
 
             app.UseMvc();
         }

@@ -45,8 +45,8 @@ namespace ImageGallery.API.Controllers
         [HttpGet(Name = "GetImages")]
         public async Task<IActionResult> GetImages(ImagesResourceParameters imagesResourceParameters)
         {
-            if (!this.propertyMappingService.ValidMappingExistsFor<ImageDto,Image>(imagesResourceParameters.OrderBy))
-            {   
+            if (!this.propertyMappingService.ValidMappingExistsFor<ImageDto, Image>(imagesResourceParameters.OrderBy))
+            {
                 return BadRequest();
             }
 
@@ -58,7 +58,7 @@ namespace ImageGallery.API.Controllers
 
             var previousPageLink = imagesFromRepo.HasPrevious ? CreateImagesResourceUri(imagesResourceParameters,
                 ResourceUriType.PreviousPage) : null;
-            
+
             var nextPageLink = imagesFromRepo.HasNext ? CreateImagesResourceUri(imagesResourceParameters,
                 ResourceUriType.NextPage) : null;
 
@@ -72,11 +72,17 @@ namespace ImageGallery.API.Controllers
                 nextPageLink = nextPageLink
             };
 
-            Response.Headers.Add("X-Pagination", 
+            Response.Headers.Add("X-Pagination",
                 Newtonsoft.Json.JsonConvert.SerializeObject(paginationMetadata));
 
-            var imagesToReturn = Mapper.Map<IEnumerable<Image>>(imagesFromRepo);
+            var imagesToReturn = Mapper.Map<IEnumerable<ImageDto>>(imagesFromRepo);
 
+            imagesToReturn = imagesToReturn.Select(x =>
+            {
+                x = CreateLinksForImage(x);
+                return x;
+            });
+            
             return Ok(imagesToReturn.ShapeData(imagesResourceParameters.Fields));
         }
 
@@ -87,19 +93,21 @@ namespace ImageGallery.API.Controllers
             {
                 return BadRequest();
             }
-            var imageFromRepo = await galleryRepository.GetImage(id);   
+            var imageFromRepo = await galleryRepository.GetImage(id);
 
             if (imageFromRepo == null)
             {
                 return NotFound();
             }
 
-            var imageToReturn = Mapper.Map<Image>(imageFromRepo);
+            var imageToReturn = Mapper.Map<ImageDto>(imageFromRepo);
 
-            return Ok(imageToReturn.ShapeData(fields));
+            var img = CreateLinksForImage(imageToReturn);
+
+            return Ok(img.ShapeData(fields));
         }
 
-        [HttpPost]
+        [HttpPost()]
         public async Task<IActionResult> Create(ImageForCreation imageForCreation)
         {
             var file = imageForCreation.File;
@@ -143,6 +151,8 @@ namespace ImageGallery.API.Controllers
 
             await galleryRepository.AddImage(image);
 
+            var imageToReturn = Mapper.Map<ImageDto>(image);
+
             if (!(await galleryRepository.Save()))
             {
                 return BadRequest("An error ocurred while saving the data into the database.");
@@ -150,10 +160,10 @@ namespace ImageGallery.API.Controllers
 
             return CreatedAtRoute("GetImage",
                new { id = image.Id },
-               image);
+               CreateLinksForImage(imageToReturn));
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}", Name ="DeleteImage")]
         public async Task<IActionResult> DeleteImage(Guid id)
         {
             var image = await galleryRepository.GetImage(id);
@@ -174,7 +184,7 @@ namespace ImageGallery.API.Controllers
 
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id}", Name ="UpdateImage")]
         public async Task<IActionResult> UpdateImage(Guid id,
             [FromBody] ImageForUpdate imageForUpdate)
         {
@@ -207,7 +217,7 @@ namespace ImageGallery.API.Controllers
             return NoContent();
         }
 
-        [HttpPut("{id}/extensions")]
+        [HttpPut("{id}/extensions", Name = "UpdateImageExtension")]
         public async Task<IActionResult> UpdateExtension(Guid id, [FromBody] ImageAllowedExtensions allowedExtensions)
         {
 
@@ -278,6 +288,18 @@ namespace ImageGallery.API.Controllers
                         });
 
             }
+
+
         }
+
+        private ImageDto CreateLinksForImage(ImageDto image)
+        {
+            image.Links.Add(new LinkDto(this.urlHelper.Link("GetImage", new { id = image.Id }),"self","GET"));
+            image.Links.Add(new LinkDto(this.urlHelper.Link("DeleteImage", new { id = image.Id }),"delete_image","DELETE"));
+            image.Links.Add(new LinkDto(this.urlHelper.Link("UpdateImage", new { id = image.Id }),"update_image","PUT"));
+            image.Links.Add(new LinkDto(this.urlHelper.Link("UpdateImageExtension", new { id = image.Id }),"update_image_extension","PUT"));
+            return image;
+        }
+
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ImageGallery.Models
 {
-    public class ImageDto
+    public class ImageDto : LinkedResourceBaseDto
     {
         public Guid Id { get; set; }
         
@@ -13,5 +13,7 @@ namespace ImageGallery.Models
         public string Name { get; set; }
 
         public DateTime Uploaded { get; set; }
+
+
     }
 }
