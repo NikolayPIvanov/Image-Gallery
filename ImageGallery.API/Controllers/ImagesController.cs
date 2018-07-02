@@ -20,27 +20,41 @@ namespace ImageGallery.API.Controllers
     public class ImagesController : Controller
     {
 
-        private readonly IGalleryRepository _galleryRepository;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IGalleryRepository galleryRepository;
+        private readonly IHostingEnvironment hostingEnvironment;
         private readonly IPhotoSettings photoSettings;
         private readonly IUrlHelper urlHelper;
+        private readonly IPropertyMappingService propertyMappingService;
+        private readonly ITypeHelperService typeHelperService;
 
         public ImagesController(IGalleryRepository galleryRepository,
                                 IHostingEnvironment hostingEnvironment,
                                 IPhotoSettings photoSettings,
-                                IUrlHelper urlHelper)
+                                IUrlHelper urlHelper,
+                                IPropertyMappingService propertyMappingService,
+                                ITypeHelperService typeHelperService)
         {
-            _galleryRepository = galleryRepository;
-            _hostingEnvironment = hostingEnvironment;
+            this.galleryRepository = galleryRepository;
+            this.hostingEnvironment = hostingEnvironment;
             this.photoSettings = photoSettings;
             this.urlHelper = urlHelper;
+            this.propertyMappingService = propertyMappingService;
+            this.typeHelperService = typeHelperService;
         }
 
         [HttpGet(Name = "GetImages")]
         public async Task<IActionResult> GetImages(ImagesResourceParameters imagesResourceParameters)
         {
+            if (!this.propertyMappingService.ValidMappingExistsFor<ImageDto,Image>(imagesResourceParameters.OrderBy))
+            {   
+                return BadRequest();
+            }
 
-            var imagesFromRepo = await _galleryRepository.GetImages(imagesResourceParameters);
+            if (!this.typeHelperService.TypeHasProperties<ImageDto>(imagesResourceParameters.Fields))
+            {
+                return BadRequest();
+            }
+            var imagesFromRepo = await galleryRepository.GetImages(imagesResourceParameters);
 
             var previousPageLink = imagesFromRepo.HasPrevious ? CreateImagesResourceUri(imagesResourceParameters,
                 ResourceUriType.PreviousPage) : null;
@@ -63,13 +77,17 @@ namespace ImageGallery.API.Controllers
 
             var imagesToReturn = Mapper.Map<IEnumerable<Image>>(imagesFromRepo);
 
-            return Ok(imagesToReturn);
+            return Ok(imagesToReturn.ShapeData(imagesResourceParameters.Fields));
         }
 
         [HttpGet("{id}", Name = "GetImage")]
-        public async Task<IActionResult> GetImage(Guid id)
+        public async Task<IActionResult> GetImage(Guid id, [FromQuery] string fields)
         {
-            var imageFromRepo = await _galleryRepository.GetImage(id);
+            if (!this.typeHelperService.TypeHasProperties<ImageDto>(fields))
+            {
+                return BadRequest();
+            }
+            var imageFromRepo = await galleryRepository.GetImage(id);   
 
             if (imageFromRepo == null)
             {
@@ -78,7 +96,7 @@ namespace ImageGallery.API.Controllers
 
             var imageToReturn = Mapper.Map<Image>(imageFromRepo);
 
-            return Ok(imageFromRepo);
+            return Ok(imageToReturn.ShapeData(fields));
         }
 
         [HttpPost]
@@ -105,7 +123,7 @@ namespace ImageGallery.API.Controllers
                  return BadRequest("Invalid file type.");
              }
              */
-            var uploadFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "uploads");
+            var uploadFolderPath = Path.Combine(hostingEnvironment.WebRootPath, "uploads");
 
             if (!Directory.Exists(uploadFolderPath))
             {
@@ -123,9 +141,9 @@ namespace ImageGallery.API.Controllers
 
             var image = new Image(imageForCreation.Title, fileName);
 
-            await _galleryRepository.AddImage(image);
+            await galleryRepository.AddImage(image);
 
-            if (!(await _galleryRepository.Save()))
+            if (!(await galleryRepository.Save()))
             {
                 return BadRequest("An error ocurred while saving the data into the database.");
             }
@@ -138,16 +156,16 @@ namespace ImageGallery.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteImage(Guid id)
         {
-            var image = await _galleryRepository.GetImage(id);
+            var image = await galleryRepository.GetImage(id);
 
             if (image == null)
             {
                 return NotFound(id);
             }
 
-            _galleryRepository.DeleteImage(image);
+            galleryRepository.DeleteImage(image);
 
-            if (!(await _galleryRepository.Save()))
+            if (!(await galleryRepository.Save()))
             {
                 throw new Exception($"Deleting image with {id} failed on save.");
             }
@@ -171,7 +189,7 @@ namespace ImageGallery.API.Controllers
                 return new Helpers.UnprocessableEntityObjectResult(ModelState);
             }
 
-            var imageFromRepo = await _galleryRepository.GetImage(id);
+            var imageFromRepo = await galleryRepository.GetImage(id);
 
             if (imageFromRepo == null)
             {
@@ -181,7 +199,7 @@ namespace ImageGallery.API.Controllers
             Mapper.Map(imageForUpdate, imageFromRepo);
 
 
-            if (!(await _galleryRepository.Save()))
+            if (!(await galleryRepository.Save()))
             {
                 throw new Exception($"Updating image with {id} failed on save.");
             }
@@ -193,7 +211,7 @@ namespace ImageGallery.API.Controllers
         public async Task<IActionResult> UpdateExtension(Guid id, [FromBody] ImageAllowedExtensions allowedExtensions)
         {
 
-            var imageFromRepo = await _galleryRepository.GetImage(id);
+            var imageFromRepo = await galleryRepository.GetImage(id);
 
             if (imageFromRepo == null)
             {
@@ -211,12 +229,12 @@ namespace ImageGallery.API.Controllers
 
             imageFromRepo.FileName = fileName + '.' + allowedExtensions.Extension;
 
-            if (!(await _galleryRepository.Save()))
+            if (!(await galleryRepository.Save()))
             {
                 throw new Exception($"Updating image with {id} failed on save.");
             }
 
-            var imageFromRepo2 = await _galleryRepository.GetImage(id);
+            var imageFromRepo2 = await galleryRepository.GetImage(id);
 
 
             return Ok(imageFromRepo2);
@@ -232,6 +250,7 @@ namespace ImageGallery.API.Controllers
                     return this.urlHelper.Link("GetImages",
                         new
                         {
+                            fields = imagesResourceParameters.Fields,
                             orderBy = imagesResourceParameters.OrderBy,
                             title = imagesResourceParameters.Title,
                             pageNumber = imagesResourceParameters.PageNumber - 1,
@@ -241,6 +260,7 @@ namespace ImageGallery.API.Controllers
                     return this.urlHelper.Link("GetImages",
                         new
                         {
+                            fields = imagesResourceParameters.Fields,
                             orderBy = imagesResourceParameters.OrderBy,
                             title = imagesResourceParameters.Title,
                             pageNumber = imagesResourceParameters.PageNumber + 1,
@@ -250,6 +270,7 @@ namespace ImageGallery.API.Controllers
                     return this.urlHelper.Link("GetAuthors",
                         new
                         {
+                            fields = imagesResourceParameters.Fields,
                             orderBy = imagesResourceParameters.OrderBy,
                             title = imagesResourceParameters.Title,
                             pageNumber = imagesResourceParameters.PageNumber,

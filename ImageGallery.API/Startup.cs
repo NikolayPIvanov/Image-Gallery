@@ -17,6 +17,7 @@ using ImageGallery.Settings.Contract;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Newtonsoft.Json.Serialization;
 
 namespace ImageGallery.API
 {
@@ -43,7 +44,8 @@ namespace ImageGallery.API
                 return new UrlHelper(actionContext);
             });
             services.AddTransient<IPropertyMappingService, PropertyMappingService>();
-            services.AddMvc();
+            services.AddTransient<ITypeHelperService, TypeHelperService>();
+            services.AddMvc().AddJsonOptions(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

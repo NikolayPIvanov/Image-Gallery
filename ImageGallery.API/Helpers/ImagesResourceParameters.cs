@@ -21,12 +21,11 @@ namespace ImageGallery.API.Helpers
             }
         }
 
-<<<<<<< HEAD
-        public string Title { get; set; }   
+        public string Title { get; set; }
 
-        public string OrderBy { get;set;} = "Uploaded";
+        public string OrderBy { get; set; } = "Uploaded";
 
-=======
->>>>>>> b177e6d7cc4e4ed83fe1b852bcde70ee2c3cdbe3
+        public string Fields { get; set; }  
+
     }
 }
